@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlogTalks.Application\BlogTalks.Application.csproj" />
+    <ProjectReference Include="..\BlogTalks.Domain\BlogTalks.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
