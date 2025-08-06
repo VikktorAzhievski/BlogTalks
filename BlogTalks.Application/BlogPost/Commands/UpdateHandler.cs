@@ -1,50 +1,46 @@
-﻿using BlogTalks.Infrastructure;
-using BlogTalks.Application.Comments.Queries;
+﻿using BlogTalks.Application.Comments.Queries;
+using BlogTalks.Domain.Repositories;
+using BlogTalks.Infrastructure;
 using MediatR;
 
 namespace BlogTalks.Application.BlogPost.Commands
 {
     public class UpdateHandler : IRequestHandler<UpdateRequest, UpdateResponse>
     {
-        private readonly FakeDataStoreBlog _dataStore;
+        private readonly IRepository<BlogTalks.Domain.Entities.BlogPost> _blogPostRepository;
 
-        public UpdateHandler(FakeDataStoreBlog dataStore)
+        public UpdateHandler(IRepository<BlogTalks.Domain.Entities.BlogPost> blogPostRepository)
         {
-            _dataStore = dataStore;
+            _blogPostRepository = blogPostRepository;
         }
 
         public async Task<UpdateResponse> Handle(UpdateRequest request, CancellationToken cancellationToken)
         {
-            var blogPost = await _dataStore.GetBlogPostByIdAsync(request.BlogPost.Id);
+            var blogPost = _blogPostRepository.GetById(request.Id);
 
             if (blogPost == null)
             {
                 return null!;
             }
 
-            blogPost.Title = request.BlogPost.Title;
-            blogPost.Text = request.BlogPost.Text;
-            blogPost.Timestamp = DateTime.UtcNow;
+            blogPost.Title = request.Title;
+            blogPost.Text = request.Text;
+            blogPost.CreatedAt = DateTime.UtcNow;
 
-            await _dataStore.UpdateBlogPostAsync(blogPost);
+            _blogPostRepository.Update(blogPost);
 
-
-            return new UpdateResponse
+            return Task.FromResult(new UpdateResponse
             {
-                Id = blogPost.id,
+                Id = blogPost.Id,
                 Title = blogPost.Title,
                 Text = blogPost.Text,
+                Timestamp = DateTime.UtcNow,
                 CreatedBy = blogPost.CreatedBy,
-                Timestamp = blogPost.Timestamp,
-                Tags = blogPost.Tags,
-                Comments = blogPost.Comments.Select(c => new BlogTalks.Application.Comments.Queries.GetResponse
-                {
-                    Id = c.Id,
-                    Text = c.Text,
-                    CreatedBy = c.CreatedBy,
-                    CreatedAt = c.CreatedAt
-                }).ToList()
-            };
+                Tags = blogPost.Tags
+            }).Result;
+
+
+
         }
     }
 }

@@ -4,15 +4,14 @@ namespace BlogTalks.Infrastructure
 {
     public class FakeDataStoreBlog
     {
-        private readonly List<Blog> _blogPosts = new()
+        private readonly List<BlogPost> _blogPosts = new()
         {
-            new Blog
+            new BlogPost
             {
-                id = 1,
+                Id = 1,
                 Title = "First Post",
                 Text = "Welcome to BlogTalks!",
                 Tags = new List<string> { "intro", "welcome" },
-                Timestamp = DateTime.UtcNow,
                 CreatedBy = 1,
                 Comments = new List<Comment>
                 {
@@ -26,31 +25,30 @@ namespace BlogTalks.Infrastructure
                     }
                 }
             },
-            new Blog
+            new BlogPost
             {
-                id = 2,
+                Id = 2,
                 Title = "Second Post",
                 Text = "Another blog entry...",
                 Tags = new List<string> { "update" },
-                Timestamp = DateTime.UtcNow,
                 CreatedBy = 2,
                
                 Comments = new List<Comment>()
             }
         };
 
-        public async Task<List<Blog>> GetAllBlogPostsAsync()
+        public async Task<List<BlogPost>> GetAllBlogPostsAsync()
         {
             return await Task.FromResult(_blogPosts);
         }
 
-        public async Task<Blog?> GetBlogPostByIdAsync(int id)
+        public async Task<BlogPost?> GetBlogPostByIdAsync(int id)
         {
-            var blog = _blogPosts.FirstOrDefault(p => p.id == id);
+            var blog = _blogPosts.FirstOrDefault(p => p.Id == id);
             return await Task.FromResult(blog);
         }
 
-        public async Task AddBlogPostAsync(Blog blog)
+        public async Task AddBlogPostAsync(BlogPost blog)
         {
             _blogPosts.Add(blog);
             await Task.CompletedTask;
@@ -58,12 +56,12 @@ namespace BlogTalks.Infrastructure
 
         public int GetNextBlogPostId()
         {
-            return _blogPosts.Any() ? _blogPosts.Max(b => b.id) + 1 : 1;
+            return _blogPosts.Any() ? _blogPosts.Max(b => b.Id) + 1 : 1;
         }
 
         public async Task<bool> DeleteBlogPostAsync(int id)
         {
-            var blog = _blogPosts.FirstOrDefault(b => b.id == id);
+            var blog = _blogPosts.FirstOrDefault(b => b.Id == id);
             if (blog == null)
                 return false;
 
@@ -71,15 +69,14 @@ namespace BlogTalks.Infrastructure
             return await Task.FromResult(true);
         }
 
-        public async Task<bool> UpdateBlogPostAsync(Blog updatedBlog)
+        public async Task<bool> UpdateBlogPostAsync(BlogPost updatedBlog)
         {
-            var existing = _blogPosts.FirstOrDefault(b => b.id == updatedBlog.id);
+            var existing = _blogPosts.FirstOrDefault(b => b.Id == updatedBlog.Id);
             if (existing == null)
                 return false;
 
             existing.Title = updatedBlog.Title;
             existing.Text = updatedBlog.Text;
-            existing.Timestamp = updatedBlog.Timestamp;
             existing.Tags = updatedBlog.Tags;
             existing.CreatedBy = updatedBlog.CreatedBy;
             existing.Comments = updatedBlog.Comments;

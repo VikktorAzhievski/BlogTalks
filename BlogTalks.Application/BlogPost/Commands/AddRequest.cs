@@ -5,10 +5,5 @@ using System.Collections.Generic;
 
 namespace BlogTalks.Application.BlogPost.Commands
 {
-    public record AddCommand(
-        string Title,
-        string Text,
-        List<string> Tags,
-        int CreatedBy
-    ) : IRequest<AddResponse>;
+    public record AddCommand(string Text, string Title, List<string> Tags) : IRequest<AddResponse>;
 }

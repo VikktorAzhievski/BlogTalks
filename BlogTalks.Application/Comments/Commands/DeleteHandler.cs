@@ -1,28 +1,38 @@
 ﻿using MediatR;
+using BlogTalks.Domain.Repositories;
+using BlogTalks.Domain.Entities;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace BlogTalks.Application.Comments.Commands
 {
-    public class DeleteHandler : IRequestHandler<DeleteCommand, DeleteResponse>
+    public class DeleteHandler : IRequestHandler<DeleteRequest, DeleteResponse>
     {
-        private readonly FakeDataStore _dataStore;
+        private readonly IRepository<Comment> _commentRepository;
 
-        public DeleteHandler(FakeDataStore dataStore)
+        public DeleteHandler(IRepository<Comment> commentRepository)
         {
-            _dataStore = dataStore;
+            _commentRepository = commentRepository;
         }
 
-        public async Task<DeleteResponse> Handle(DeleteCommand request, CancellationToken cancellationToken)
+        public async Task<DeleteResponse?> Handle(DeleteRequest request, CancellationToken cancellationToken)
         {
-            var result = await _dataStore.DeleteCommentAsync(request.Id);
+            var comment = _commentRepository.GetById(request.Id);
 
-            if (!result)
+            if (comment == null)
             {
-                return new DeleteResponse(false, "Comment not found or could not be deleted.");
+                return null;
             }
 
-            return new DeleteResponse(true, "Comment deleted successfully.");
+            _commentRepository.Delete(comment);
+
+///// return Tas.FromResult(new DeleteResponse
+//            {
+//                Id = comment.Id,
+//                Message = "Comment deleted successfully."
+//            });
+            return new DeleteResponse();
         }
+
     }
 }

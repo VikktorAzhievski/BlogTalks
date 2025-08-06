@@ -1,6 +1,4 @@
-﻿using BlogTalks.API.Controllers;
-using BlogTalks.API.DTOs;
-using BlogTalks.Application;
+﻿using BlogTalks.API.DTOs;
 using BlogTalks.Application.Comments.Commands;
 using BlogTalks.Application.Comments.Queries;
 using MediatR;
@@ -37,58 +35,53 @@ namespace BlogTalks.API.Controllers
         [HttpGet("{id}", Name = "GetCommentById")]
         public async Task<ActionResult> Get([FromRoute] GetByIdRequest request)
         {
-            try
-            {
-                var comment = await _mediator.Send(request);
-                return Ok(comment);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "An unexpected error occurred." });
-            }
+            var comment = await _mediator.Send(request);
+
+            if (comment == null)
+                return NotFound();
+
+            return Ok(comment);
         }
 
         // POST api/<CommentsController>
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] AddCommand request)
+        public async Task<ActionResult> PostAsync([FromBody] AddComand request)
         {
-            var commentToReturn = await _mediator.Send(new AddCommand(request.Id, request.Text, request.Timestamp, request.CreatedAt, request.CreatedBy, request.BlogPostId));
-
-            return CreatedAtRoute("GetCommentById", new { id = commentToReturn.Id }, commentToReturn);
+            var response = await _mediator.Send(request);
+            if (response == null)
+            {
+                return NotFound();
+            }
+            return Ok(response);
         }
 
-        // PUT api/<CommentsController>/5
+        //PUT api/<CommentsController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateRequest request)
+        public async Task<IActionResult> Update([FromRoute]int id, [FromBody] UpdateRequest request)
         {
-            if (id != request.Id)
-                return BadRequest("ID mismatch");
-
-            var response = await _mediator.Send(request);
+            var response = await _mediator.Send(new UpdateRequest(id,request.Text));
 
             if (response == null)
-                return NotFound("Comment not found.");
+                return NotFound();
 
             return NoContent();
         }
-
 
         // DELETE api/<CommentsController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var response = await _mediator.Send(new DeleteCommand(id));
+            var response = await _mediator.Send(new DeleteRequest(id));
 
-            if (!response.IsSuccess)
-                return NotFound(response.Message);
+            if (response == null)
+            {
+                return NotFound();
+            }
 
             return NoContent();
         }
 
+        //[HttpGet("blogPosts/{blogPostId}/comments")]
         [HttpGet("blogPosts/{blogPostId}/comments")]
         public async Task<IActionResult> GetByBlogPostId(int blogPostId)
         {

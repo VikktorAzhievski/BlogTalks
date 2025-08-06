@@ -55,6 +55,7 @@ namespace BlogTalks.API.Controllers
             return Ok(blogPosts);
         }
 
+
         // GET api/<BlogPostsController>/5
         [HttpGet("{id}", Name = "GetBlogPostById")]
         public async Task<IActionResult> GetById(int id)
@@ -82,16 +83,16 @@ namespace BlogTalks.API.Controllers
 
         // PUT api/<BlogPostsController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] UpdateResponse blogPost)
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateRequest request)
         {
-            var result = await _mediator.Send(new UpdateRequest(id, blogPost));
+            var blogpost = await _mediator.Send(new UpdateRequest(id, request.Title,request.Text,request.Tags));
 
-            if (result == null)
+            if (blogpost == null)
             {
                 return NotFound($"Blog post with ID {id} not found.");
             }
 
-            return NoContent();
+            return Ok(blogpost);
         }
 
 

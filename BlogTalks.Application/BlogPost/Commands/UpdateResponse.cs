@@ -11,6 +11,6 @@ namespace BlogTalks.Application.BlogPost.Commands
         public int CreatedBy { get; set; }
         public DateTime Timestamp { get; set; }
         public List<string> Tags { get; set; } = new();
-        public List<Comments.Queries.GetResponse> Comments { get; set; } = new();
+
     }
 }

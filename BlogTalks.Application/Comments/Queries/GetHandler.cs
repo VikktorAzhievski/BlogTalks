@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using BlogTalks.Domain.Entities;
+using BlogTalks.Domain.Repositories;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,17 +11,17 @@ namespace BlogTalks.Application.Comments.Queries
 {
     public class GetHandler : IRequestHandler<GetRequest, IEnumerable<GetResponse>>
     {
-        private readonly FakeDataStore _dataStore;
- 
-        public GetHandler(FakeDataStore dataStore)
+        private readonly IRepository<Comment> _commentRepository;
+
+        public GetHandler(IRepository<Comment> commentRepository)
         {
-            _dataStore = dataStore;
+            _commentRepository = commentRepository;
         }
- 
-        public async Task<IEnumerable<GetResponse>> Handle(GetRequest request, CancellationToken cancellationToken)
+
+        public Task<IEnumerable<GetResponse>> Handle(GetRequest request, CancellationToken cancellationToken)
         {
-            var comments = await _dataStore.GetAllComments();
- 
+            var comments = _commentRepository.GetAll();
+
             var response = comments.Select(c => new GetResponse
             {
                 Id = c.Id,
@@ -28,10 +30,11 @@ namespace BlogTalks.Application.Comments.Queries
                 CreatedBy = c.CreatedBy,
                 BlogPostId = c.BlogPostId
             });
- 
-            return response;
+
+            return Task.FromResult(response);
         }
- 
+
+
     }
- 
+
 }

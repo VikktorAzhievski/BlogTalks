@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlogTalks.Application.Comments.Commands
+namespace BlogTalks.Infrastructure.Data.DataContext
 {
-    public class DeleteResponse
+    internal static class Schemas
     {
-
+        public const string Default = "public";
     }
-
 }

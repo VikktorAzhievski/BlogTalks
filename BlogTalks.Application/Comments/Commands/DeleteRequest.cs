@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace BlogTalks.Application.Comments.Commands
 {
-    public record DeleteCommand(int Id) : IRequest<DeleteResponse>;
+    public record DeleteRequest(int Id) : IRequest<DeleteResponse>;
 
 }
