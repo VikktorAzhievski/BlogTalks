@@ -14,39 +14,6 @@ namespace BlogTalks.API.Controllers
         private readonly IMediator _mediator;
         public BlogPostsController(IMediator mediator) => _mediator = mediator;
 
-        private static List<BlogPostDto> blogPosts = new List<BlogPostDto>
-        {
-            new BlogPostDto
-            {
-                Id = 1,
-                Title = "Title 1",
-                Text = "Text 1",
-                CreatedBy = 1,
-                Timestamp = DateTime.Now,
-                Tags = new List<string> { "f", "a" },
-                comments = new List<CommentsDto>
-                {
-                    new CommentsDto { Id = 1, Text = "Some text 1", CreatedAt = DateTime.Now, CreatedBy = 1, BlogPostId = 3 },
-                    new CommentsDto { Id = 2, Text = "Some text 2", CreatedAt = DateTime.Now, CreatedBy = 2, BlogPostId = 4 }
-                }
-            },
-            new BlogPostDto
-            {
-                Id = 2,
-                Title = "Title 2",
-                Text = "Text 2",
-                CreatedBy = 2,
-                Timestamp = DateTime.Now,
-                Tags = new List<string> { "s", "h" },
-                comments = new List<CommentsDto>
-                {
-                    new CommentsDto { Id = 3, Text = "Some text 3", CreatedAt = DateTime.Now, CreatedBy = 3, BlogPostId = 4 },
-                    new CommentsDto { Id = 4, Text = "Some text 4", CreatedAt = DateTime.Now, CreatedBy = 4, BlogPostId = 4 }
-                }
-            }
-        };
-
-
         // GET: api/<BlogPostsController>
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -54,8 +21,6 @@ namespace BlogTalks.API.Controllers
             var blogPosts = await _mediator.Send(new GetRequest());
             return Ok(blogPosts);
         }
-
-
         // GET api/<BlogPostsController>/5
         [HttpGet("{id}", Name = "GetBlogPostById")]
         public async Task<IActionResult> GetById(int id)
@@ -71,7 +36,6 @@ namespace BlogTalks.API.Controllers
                 return NotFound(new { error = ex.Message });
             }
         }
-
 
         // POST api/<BlogPostsController>
         [HttpPost]
@@ -94,8 +58,6 @@ namespace BlogTalks.API.Controllers
 
             return Ok(blogpost);
         }
-
-
 
         // DELETE api/<BlogPostsController>/5
         [HttpDelete("{id}")]

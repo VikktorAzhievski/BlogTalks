@@ -1,6 +1,4 @@
-﻿using BlogTalks.Domain.Entities;
-using BlogTalks.Domain.Repositories;
-using BlogTalks.Infrastructure;
+﻿using BlogTalks.Domain.Repositories;
 using MediatR;
 
 namespace BlogTalks.Application.BlogPost.Commands

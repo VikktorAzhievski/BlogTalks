@@ -1,6 +1,5 @@
 ﻿using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
-using BlogTalks.Infrastructure;
 using MediatR;
 
 namespace BlogTalks.Application.Comments.Queries

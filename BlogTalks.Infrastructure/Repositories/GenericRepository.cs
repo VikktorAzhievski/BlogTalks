@@ -16,7 +16,7 @@ namespace BlogTalks.Infrastructure.Repositories
             _dbSet = _context.Set<TEntity>();
         }
 
-        public TEntity GetById(int id) => _dbSet.Find(id);
+        public TEntity? GetById(int id) => _dbSet.Find(id);
 
         public IEnumerable<TEntity> GetAll() => _dbSet;
 

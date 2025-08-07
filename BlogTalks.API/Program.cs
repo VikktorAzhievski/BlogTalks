@@ -13,8 +13,6 @@ builder.Services.AddSwaggerGen(options =>
     options.CustomSchemaIds(type => type.FullName);
 });
 
-builder.Services.AddSingleton<FakeDataStore>();
-builder.Services.AddSingleton<FakeDataStoreBlog>();
 
 // Dependency Injection
 builder.Services.AddPresentation();

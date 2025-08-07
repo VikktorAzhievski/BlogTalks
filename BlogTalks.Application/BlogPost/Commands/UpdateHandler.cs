@@ -1,6 +1,4 @@
-﻿using BlogTalks.Application.Comments.Queries;
-using BlogTalks.Domain.Repositories;
-using BlogTalks.Infrastructure;
+﻿using BlogTalks.Domain.Repositories;
 using MediatR;
 
 namespace BlogTalks.Application.BlogPost.Commands

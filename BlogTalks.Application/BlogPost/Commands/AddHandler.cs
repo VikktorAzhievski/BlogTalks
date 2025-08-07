@@ -1,7 +1,6 @@
 ﻿using BlogTalks.Application.BlogPost.Commands;
 using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
-using BlogTalks.Infrastructure;
 using MediatR;
 
 public class AddHandler : IRequestHandler<AddCommand, AddResponse>

@@ -9,7 +9,6 @@ namespace BlogTalks.Application.Comments.Commands
     public class DeleteHandler : IRequestHandler<DeleteRequest, DeleteResponse>
     {
         private readonly IRepository<Comment> _commentRepository;
-
         public DeleteHandler(IRepository<Comment> commentRepository)
         {
             _commentRepository = commentRepository;
@@ -26,11 +25,6 @@ namespace BlogTalks.Application.Comments.Commands
 
             _commentRepository.Delete(comment);
 
-///// return Tas.FromResult(new DeleteResponse
-//            {
-//                Id = comment.Id,
-//                Message = "Comment deleted successfully."
-//            });
             return new DeleteResponse();
         }
 
