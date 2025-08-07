@@ -12,11 +12,6 @@ namespace BlogTalks.API.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-       private static  List<CommentsDto> comments = new List<CommentsDto>
-                {
-                    new CommentsDto { Id = 1, Text = "First comment", CreatedAt = DateTime.Now, CreatedBy = 1 },
-                    new CommentsDto { Id = 2, Text = "Second comment", CreatedAt = DateTime.Now, CreatedBy = 2 },
-                   };
         private readonly IMediator _mediator;
         public CommentsController(IMediator mediator)
         {
