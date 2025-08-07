@@ -1,42 +1,38 @@
 ﻿using BlogTalks.Domain.Entities;
-using BlogTalks.Infrastructure;
+using BlogTalks.Domain.Repositories;
 using MediatR;
 
-namespace BlogTalks.Application.BlogPost.Commands
+namespace BlogTalks.Application.Comments.Commands
 {
-    public class AddBlogPostHandler : IRequestHandler<AddCommand, AddResponse>
+    public class AddCommentHandler : IRequestHandler<AddComand, AddResponse>
     {
-        private readonly FakeDataStoreBlog _dataStore;
+        private readonly ICommentRepository _commentRepository;
+        private readonly IBlogPostRepository _blogPostRepository;
 
-        public AddBlogPostHandler(FakeDataStoreBlog dataStore)
+        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository)
         {
-            _dataStore = dataStore;
+            _commentRepository = commentRepository;
+            _blogPostRepository = blogPostRepository;
         }
 
-        public async Task<AddResponse> Handle(AddCommand request, CancellationToken cancellationToken)
+        public async Task<AddResponse> Handle(AddComand request, CancellationToken cancellationToken)
         {
-            var blogPost = new Blog
+            var blogPost = _blogPostRepository.GetById(request.BlogPostId);
+            if (blogPost == null)
+                return null; 
+
+            var comment = new Comment
             {
-                id = _dataStore.GetNextBlogPostId(),
-                Title = request.Title,
+                BlogPostId = request.BlogPostId,
+                Blog = blogPost,
                 Text = request.Text,
-                Tags = request.Tags,
-                Timestamp = DateTime.Now,
-                CreatedBy = request.CreatedBy,
-                Comments = new List<Comment>()
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = 5,
             };
 
-            await _dataStore.AddBlogPostAsync(blogPost);
+            _commentRepository.Add(comment);
 
-            return new AddResponse
-            {
-                Id = blogPost.id,
-                Title = blogPost.Title,
-                Text = blogPost.Text,
-                Tags = blogPost.Tags,
-                Timestamp = blogPost.Timestamp,
-                CreatedBy = blogPost.CreatedBy
-            };
+            return new AddResponse(comment.Id);
         }
     }
 }

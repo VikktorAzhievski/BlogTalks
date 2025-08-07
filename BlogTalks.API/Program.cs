@@ -1,4 +1,5 @@
-﻿using BlogTalks.Application.Comments.Queries;
+﻿using BlogTalks.Application;
+using BlogTalks.API;
 using BlogTalks.Infrastructure;
 using MediatR;
 
@@ -12,13 +13,11 @@ builder.Services.AddSwaggerGen(options =>
     options.CustomSchemaIds(type => type.FullName);
 });
 
-builder.Services.AddSingleton<FakeDataStore>();
-builder.Services.AddSingleton<FakeDataStoreBlog>();
 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(GetHandler).Assembly);
-});
+// Dependency Injection
+builder.Services.AddPresentation();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
@@ -32,3 +31,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+

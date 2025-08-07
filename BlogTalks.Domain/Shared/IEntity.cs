@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlogTalks.Application.Comments.Commands
+namespace BlogTalks.Domain.Shared
 {
-    public record AddResponse(int Id);
-
+    public interface IEntity
+    {
+        int Id { get; set; }
+    }
 }
-
-
-

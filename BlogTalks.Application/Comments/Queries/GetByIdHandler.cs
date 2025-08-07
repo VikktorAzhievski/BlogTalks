@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using BlogTalks.Domain.Entities;
+using BlogTalks.Domain.Repositories;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +11,23 @@ namespace BlogTalks.Application.Comments.Queries
 {
     public class GetByIdHandler : IRequestHandler<GetByIdRequest, GetByIdResponse>
     {
-        private readonly FakeDataStore _dataStore;
+        private readonly IRepository<Comment> _commentRepository;
 
-        public GetByIdHandler(FakeDataStore dataStore)
+        public GetByIdHandler(IRepository<Comment> commentRepository)
         {
-            _dataStore = dataStore;
+            _commentRepository = commentRepository;
         }
 
-        public async Task<GetByIdResponse> Handle(GetByIdRequest request, CancellationToken cancellationToken)
+        public Task<GetByIdResponse?> Handle(GetByIdRequest request, CancellationToken cancellationToken)
         {
-            var comment = await _dataStore.GetCommentById(request.id);
+            var comment = _commentRepository.GetById(request.id);
+
             if (comment == null)
             {
-                throw new Exception($"Comment with ID {request.id} not found.");
+                return Task.FromResult<GetByIdResponse?>(null);
             }
-            return new GetByIdResponse
+
+            var response = new GetByIdResponse
             {
                 Id = comment.Id,
                 Text = comment.Text,
@@ -31,6 +35,8 @@ namespace BlogTalks.Application.Comments.Queries
                 CreatedBy = comment.CreatedBy,
                 BlogPostId = comment.BlogPostId
             };
+
+            return Task.FromResult(response);
         }
 
     }
