@@ -8,6 +8,7 @@ namespace BlogTalks.Application.Abstractions
     {
         public DbSet<Domain.Entities.BlogPost> Blogs { get; set; }
         public DbSet<Comment> Comments { get; set; }
-     
+        public DbSet<Domain.Entities.User> Users { get; set; }
+
     }
 }
