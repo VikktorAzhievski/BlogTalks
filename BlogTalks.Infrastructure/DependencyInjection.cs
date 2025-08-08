@@ -25,6 +25,7 @@ namespace BlogTalks.Infrastructure
 
             services.AddScoped<IBlogPostRepository, BlogPostRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             return services;
         }
