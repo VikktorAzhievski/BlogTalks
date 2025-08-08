@@ -22,17 +22,17 @@ namespace BlogTalks.Application.Users.Commands
 
             if (existingUser != null)
             {
-                return new RegisterResponse(0, "", "", "User already exists with this email.");
+                return null;
             }
 
             var registeredUser = await _userRepository.RegisterAsync(request.Username, request.Password, request.Email);
 
             if (registeredUser == null)
             {
-                return new RegisterResponse(0, "", "", "User registration failed.");
+                return null;
             }
 
-            return new RegisterResponse(registeredUser.Id, registeredUser.Username, registeredUser.Email);
+            return new RegisterResponse { Message = "Register successfull" };
         }
 
     }

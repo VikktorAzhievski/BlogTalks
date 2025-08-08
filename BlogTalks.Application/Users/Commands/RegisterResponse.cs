@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BlogTalks.Application.Users.Commands
 {
-    public record RegisterResponse(int Id, string Username, string Email, string? ErrorMessage = null);
+    public class RegisterResponse
+    {
+        public string Message { get; set; }
+    }
 
 }

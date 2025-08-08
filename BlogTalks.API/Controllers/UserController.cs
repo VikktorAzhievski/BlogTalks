@@ -17,10 +17,6 @@ namespace BlogTalks.API.Controllers
         public async Task<IActionResult> Login([FromBody] Application.Users.Commands.LoginRequest request)
         {
             var response = await _mediator.Send(request);
-            if (response == null)
-            {
-                return Unauthorized();
-            }
             return Ok(response);
         }
 
@@ -30,6 +26,10 @@ namespace BlogTalks.API.Controllers
 
         {
             var response = await _mediator.Send(request);
+            if (response == null)
+            {
+                return NotFound();
+            }
             return Ok(response);
 
         }
