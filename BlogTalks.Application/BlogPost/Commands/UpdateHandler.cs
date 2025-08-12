@@ -30,6 +30,7 @@ namespace BlogTalks.Application.BlogPost.Commands
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
             int userId = int.Parse(userIdClaim);
+
             if (blogPost.CreatedBy != userId)
             {
                 throw new UnauthorizedAccessException("You do not have permission to update this blog post.");
