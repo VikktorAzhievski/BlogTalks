@@ -22,7 +22,11 @@ public class AddHandler : IRequestHandler<AddCommand, AddResponse>
             throw new UnauthorizedAccessException("User is not authenticated.");
         }
 
-        int userId = int.Parse(userIdClaim);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            throw new InvalidOperationException("Invalid user ID format.");
+        }
+
 
         var blogPost = new BlogPost
         {

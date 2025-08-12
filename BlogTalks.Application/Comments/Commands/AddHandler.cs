@@ -31,6 +31,11 @@ namespace BlogTalks.Application.Comments.Commands
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
+            if (!int.TryParse(userIdClaim, out var userid))
+            {
+                throw new InvalidOperationException("Invalid user ID format.");
+            }
+
             int userId = int.Parse(userIdClaim);
             var comment = new Comment
             {
