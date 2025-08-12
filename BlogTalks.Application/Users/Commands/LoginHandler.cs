@@ -1,4 +1,6 @@
-﻿using BlogTalks.Application.Users.Commands;
+﻿using BlogTalks.Application.Abstractions;
+using BlogTalks.Application.Models;
+using BlogTalks.Application.Users.Commands;
 using BlogTalks.Domain.Repositories;
 using MediatR;
 
@@ -7,10 +9,12 @@ namespace BlogTalks.Application.User.Commands;
 public class LoginHandler : IRequestHandler<LoginRequest, LoginResponse>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IAuthService _authService;
 
-    public LoginHandler(IUserRepository userRepository)
+    public LoginHandler(IUserRepository userRepository, IAuthService authService)
     {
         _userRepository = userRepository;
+        _authService = authService;
     }
 
     public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
@@ -32,7 +36,16 @@ public class LoginHandler : IRequestHandler<LoginRequest, LoginResponse>
             );
         }
 
-        var token = Guid.NewGuid().ToString();
+        var jwtUser = new JwtUserModel
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Name = user.Username,
+            Email = user.Email,
+            Roles = new List<string>()
+        };
+
+        var token = _authService.CreateToken(jwtUser);
 
         return new LoginResponse(
             Token: token,
