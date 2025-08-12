@@ -1,9 +1,10 @@
-﻿using MediatR;
+﻿using BlogTalks.Application.Users.Commands;
+using BlogTalks.Application.Users.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using BlogTalks.Application.Users.Commands;
-using BlogTalks.Application.Users.Queries;
 
 namespace BlogTalks.API.Controllers
 {
@@ -13,6 +14,7 @@ namespace BlogTalks.API.Controllers
         public UserController(IMediator mediator) => _mediator = mediator;
 
         // POST:api/User/login
+        [AllowAnonymous]
         [HttpPost("/api/Users/login")]
         public async Task<IActionResult> Login([FromBody] Application.Users.Commands.LoginRequest request)
         {

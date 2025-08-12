@@ -2,24 +2,34 @@
 using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 public class AddHandler : IRequestHandler<AddCommand, AddResponse>
 {
     private readonly IRepository<BlogTalks.Domain.Entities.BlogPost> _blogPostRepository;
-
-    public AddHandler(IRepository<BlogTalks.Domain.Entities.BlogPost> blogPostRepository)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public AddHandler(IRepository<BlogTalks.Domain.Entities.BlogPost> blogPostRepository, IHttpContextAccessor httpContextAccessor)
     {
         _blogPostRepository = blogPostRepository;
+        _httpContextAccessor = httpContextAccessor;
     }
     public async Task<AddResponse> Handle(AddCommand request, CancellationToken cancellationToken)
     {
+        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("id")?.Value;
+
+        if (userIdClaim == null)
+        {
+            throw new UnauthorizedAccessException("User is not authenticated.");
+        }
+
+        int userId = int.Parse(userIdClaim);
+
         var blogPost = new BlogPost
         {
-           
             Title = request.Title,
             Text = request.Text,
             Tags = request.Tags,
-            CreatedBy = 5,
+            CreatedBy = userId, 
             CreatedAt = DateTime.UtcNow
         };
 

@@ -2,11 +2,13 @@
 using BlogTalks.Application;
 using BlogTalks.Application.BlogPost.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace BlogTalks.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BlogPostsController : ControllerBase
@@ -15,6 +17,7 @@ namespace BlogTalks.API.Controllers
         public BlogPostsController(IMediator mediator) => _mediator = mediator;
 
         // GET: api/<BlogPostsController>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {

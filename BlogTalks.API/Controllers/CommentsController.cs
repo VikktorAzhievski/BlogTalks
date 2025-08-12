@@ -2,12 +2,14 @@
 using BlogTalks.Application.Comments.Commands;
 using BlogTalks.Application.Comments.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace BlogTalks.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
@@ -19,6 +21,7 @@ namespace BlogTalks.API.Controllers
         }
 
         //  GET: api/<CommentsController>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult> Get()
         {

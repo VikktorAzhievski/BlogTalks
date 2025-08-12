@@ -1,6 +1,7 @@
 ﻿using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace BlogTalks.Application.Comments.Commands
 {
@@ -8,26 +9,36 @@ namespace BlogTalks.Application.Comments.Commands
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IBlogPostRepository _blogPostRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository)
+        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository, IHttpContextAccessor httpContextAccessor)
         {
             _commentRepository = commentRepository;
             _blogPostRepository = blogPostRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<AddResponse> Handle(AddComand request, CancellationToken cancellationToken)
         {
             var blogPost = _blogPostRepository.GetById(request.BlogPostId);
             if (blogPost == null)
-                return null; 
+                return null;
 
+            // Check if the user is authenticated
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("id")?.Value;
+            if (userIdClaim == null)
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            int userId = int.Parse(userIdClaim);
             var comment = new Comment
             {
                 BlogPostId = request.BlogPostId,
                 Blog = blogPost,
                 Text = request.Text,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = 5,
+                CreatedBy = userId
             };
 
             _commentRepository.Add(comment);
