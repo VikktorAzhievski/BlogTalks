@@ -15,9 +15,11 @@ namespace BlogTalks.API.Controllers
     public class CommentsController : ControllerBase
     {
         private readonly IMediator _mediator;
-        public CommentsController(IMediator mediator)
+        private readonly ILogger<CommentsController> _logger;
+        public CommentsController(IMediator mediator, ILogger<CommentsController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         //  GET: api/<CommentsController>
@@ -33,6 +35,7 @@ namespace BlogTalks.API.Controllers
         [HttpGet("{id}", Name = "GetCommentById")]
         public async Task<ActionResult> Get([FromRoute] GetByIdRequest request)
         {
+            _logger.LogInformation("Fetching blog by id.");
             var comment = await _mediator.Send(request);
 
             if (comment == null)
@@ -45,6 +48,7 @@ namespace BlogTalks.API.Controllers
         [HttpPost]
         public async Task<ActionResult> PostAsync([FromBody] AddComand request)
         {
+            _logger.LogInformation("Adding a new comment");
             var response = await _mediator.Send(request);
             if (response == null)
             {
@@ -69,6 +73,7 @@ namespace BlogTalks.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            _logger.LogInformation("Deleting comment");
             var response = await _mediator.Send(new DeleteRequest(id));
 
             if (response == null)
