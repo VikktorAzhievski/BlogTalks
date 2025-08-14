@@ -14,8 +14,12 @@ namespace BlogTalks.API.Controllers
     public class BlogPostsController : ControllerBase
     {
         private readonly IMediator _mediator;
-        public BlogPostsController(IMediator mediator) => _mediator = mediator;
-
+        private readonly ILogger<BlogPostsController> _logger;
+        public BlogPostsController(IMediator mediator, ILogger<BlogPostsController> logger)
+        {
+            _mediator = mediator;
+            _logger = logger;
+        }
         // GET: api/<BlogPostsController>
         [AllowAnonymous]
         [HttpGet]
@@ -28,6 +32,7 @@ namespace BlogTalks.API.Controllers
         [HttpGet("{id}", Name = "GetBlogPostById")]
         public async Task<IActionResult> GetById(int id)
         {
+            _logger.LogInformation("Fetching blog by id.");
             try
             {
                 var request = new GetByIdRequest(id);
@@ -44,6 +49,7 @@ namespace BlogTalks.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] AddCommand command)
         {
+            _logger.LogInformation("Adding a new blog");
             var created = await _mediator.Send(command);
             return CreatedAtRoute("GetBlogPostById", new { id = created.Id }, created);
         }
@@ -66,6 +72,7 @@ namespace BlogTalks.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            _logger.LogInformation("Deleting blog");
             var response = await _mediator.Send(new DeleteRequest(id));
 
             if (response == null)
