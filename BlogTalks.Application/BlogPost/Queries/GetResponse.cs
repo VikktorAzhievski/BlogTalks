@@ -1,4 +1,5 @@
-﻿using BlogTalks.Domain.Entities;
+﻿using BlogTalks.Application.BlogPost.Responses;
+using BlogTalks.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +10,7 @@ namespace BlogTalks.Application.BlogPost.Commands
 {
     public class GetResponse
     {
-        public int Id { get; set; }
-
-        public required string Title { get; set; }
-
-        public string Text { get; set; } = string.Empty;
-
-        public List<string> Tags { get; set; } = new List<string>();
-
-        public DateTime Timestamp { get; set; }
-
-        public int CreatedBy { get; set; }
-
-        public List<Comment> Comments { get; set; }
+        public List<BlogPostModel> BlogPosts { get; set; } = new List<BlogPostModel>();
+        public Metadata Metadata { get; set; } = new Metadata();
     }
 }

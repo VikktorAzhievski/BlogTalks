@@ -32,5 +32,12 @@ namespace BlogTalks.Infrastructure.Repositories
 
             return user;
         }
+
+        public IEnumerable<User> GetUsersByIds(IEnumerable<int> ids)
+        {
+            return _context.Users
+                .Where(u => ids.Contains(u.Id));
+        }
+
     }
 }
