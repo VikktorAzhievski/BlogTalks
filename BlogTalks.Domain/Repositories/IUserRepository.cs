@@ -7,5 +7,7 @@ namespace BlogTalks.Domain.Repositories
     {
         Task<User?> RegisterAsync(string username, string password, string email);
         Task<User?> FindByEmail(string email);
+        public IEnumerable<User> GetUsersByIds(IEnumerable<int> ids);
+
     }
 }

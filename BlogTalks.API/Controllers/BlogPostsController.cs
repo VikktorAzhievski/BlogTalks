@@ -23,10 +23,14 @@ namespace BlogTalks.API.Controllers
         // GET: api/<BlogPostsController>
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(
+            [FromQuery] string? searchWord,
+            [FromQuery] string? tag,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var blogPosts = await _mediator.Send(new GetRequest());
-            return Ok(blogPosts);
+            var response = await _mediator.Send(new GetRequest(searchWord, tag, pageNumber, pageSize));
+            return Ok(response);
         }
         // GET api/<BlogPostsController>/5
         [HttpGet("{id}", Name = "GetBlogPostById")]
@@ -58,7 +62,7 @@ namespace BlogTalks.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] UpdateRequest request)
         {
-            var blogpost = await _mediator.Send(new UpdateRequest(id, request.Title,request.Text,request.Tags));
+            var blogpost = await _mediator.Send(new UpdateRequest(id, request.Title, request.Text, request.Tags));
 
             if (blogpost == null)
             {
@@ -81,6 +85,6 @@ namespace BlogTalks.API.Controllers
             return NoContent();
         }
 
-       
+
     }
 }
