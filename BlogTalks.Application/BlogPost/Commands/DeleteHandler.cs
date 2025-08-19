@@ -1,6 +1,8 @@
-﻿using BlogTalks.Domain.Repositories;
+﻿using BlogTalks.Domain.Exceptions;
+using BlogTalks.Domain.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace BlogTalks.Application.BlogPost.Commands
 {
@@ -19,20 +21,23 @@ namespace BlogTalks.Application.BlogPost.Commands
             var blogPost = _blogPostRepository.GetById(request.Id);
             if (blogPost == null)
             {
-                return null;
+                throw new BlogTalksException($"Blog post with id {request.Id} not found", HttpStatusCode.NotFound);
             }
+
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("id")?.Value;
             if (!int.TryParse(userIdClaim, out int currentUserId))
             {
-                return null;
+                throw new BlogTalksException("User not authenticated", HttpStatusCode.Unauthorized);
             }
+
             if (blogPost.CreatedBy != currentUserId)
             {
-                return null;
+                throw new BlogTalksException("You are not authorized to delete this blog post", HttpStatusCode.Forbidden);
             }
 
             _blogPostRepository.Delete(blogPost);
             return new DeleteResponse();
         }
+
     }
 }
