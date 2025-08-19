@@ -77,13 +77,12 @@ namespace BlogTalks.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             _logger.LogInformation("Deleting blog");
-            var response = await _mediator.Send(new DeleteRequest(id));
 
-            if (response == null)
-                return NotFound();
+            await _mediator.Send(new DeleteRequest(id));
 
             return NoContent();
         }
+
 
 
     }

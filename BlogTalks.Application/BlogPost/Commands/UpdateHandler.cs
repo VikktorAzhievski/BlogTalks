@@ -39,6 +39,7 @@ namespace BlogTalks.Application.BlogPost.Commands
             blogPost.Title = request.Title;
             blogPost.Text = request.Text;
             blogPost.CreatedAt = DateTime.UtcNow;
+            blogPost.Tags = request.Tags;
 
             _blogPostRepository.Update(blogPost);
 
