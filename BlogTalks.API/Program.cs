@@ -19,6 +19,16 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+builder.Services.AddHttpClient("EmailSenderApi", client =>
+
+{
+
+    var config = builder.Configuration.GetSection("Services:EmailSenderApi");
+
+    client.BaseAddress = new Uri(config["Url"]);
+
+});
+
 
 // Dependency Injection
 builder.Services.AddPresentation();

@@ -2,6 +2,7 @@
 using BlogTalks.Domain.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http.Json;
 
 namespace BlogTalks.Application.Comments.Commands
 {
@@ -10,12 +11,15 @@ namespace BlogTalks.Application.Comments.Commands
         private readonly ICommentRepository _commentRepository;
         private readonly IBlogPostRepository _blogPostRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository, IHttpContextAccessor httpContextAccessor)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IUserRepository _userRepository;
+        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository, IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory, IUserRepository userRepository)
         {
             _commentRepository = commentRepository;
             _blogPostRepository = blogPostRepository;
             _httpContextAccessor = httpContextAccessor;
+            _httpClientFactory = httpClientFactory;
+            _userRepository = userRepository;
         }
 
         public async Task<AddResponse> Handle(AddComand request, CancellationToken cancellationToken)
@@ -36,6 +40,10 @@ namespace BlogTalks.Application.Comments.Commands
                 throw new InvalidOperationException("Invalid user ID format.");
             }
 
+            var httpClient = _httpClientFactory.CreateClient("EmailSenderApi");
+            var blogpostCreator = _userRepository.GetById(blogPost.CreatedBy);
+            var commentCreator = _userRepository.GetById(userid);
+
             int userId = int.Parse(userIdClaim);
             var comment = new Comment
             {
@@ -47,7 +55,14 @@ namespace BlogTalks.Application.Comments.Commands
             };
 
             _commentRepository.Add(comment);
-
+            var emailDto = new
+            {
+                From = commentCreator.Email,
+                To = commentCreator.Email,
+                Subject = "New Comment Added",
+                Body = " Someone added a new comment to your blog post: " + request.Text
+            };
+            await httpClient.PostAsJsonAsync("/send", emailDto);
             return new AddResponse(comment.Id);
         }
     }
