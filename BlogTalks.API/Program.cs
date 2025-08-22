@@ -2,8 +2,8 @@
 using BlogTalks.API.Middlewares;
 using BlogTalks.Application;
 using BlogTalks.Infrastructure;
+using Microsoft.FeatureManagement;
 using Serilog;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,17 +18,12 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
 builder.Services.AddHttpClient("EmailSenderApi", client =>
-
 {
-
     var config = builder.Configuration.GetSection("Services:EmailSenderApi");
-
     client.BaseAddress = new Uri(config["Url"]);
-
 });
-
+builder.Services.AddFeatureManagement();
 
 // Dependency Injection
 builder.Services.AddPresentation();

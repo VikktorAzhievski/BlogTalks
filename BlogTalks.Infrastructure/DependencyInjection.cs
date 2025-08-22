@@ -2,6 +2,7 @@
 using BlogTalks.Domain.Repositories;
 using BlogTalks.Infrastructure.Authentication;
 using BlogTalks.Infrastructure.Data.DataContext;
+using BlogTalks.Infrastructure.Messaging;
 using BlogTalks.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +39,13 @@ namespace BlogTalks.Infrastructure
             services.AddHttpContextAccessor();
             services.AddScoped<IAuthService, AuthService>();
 
+            services.AddKeyedTransient<IMessagingService, MessagingServiceHttp>("MessagingHttpService");
+            services.AddKeyedTransient<IMessagingService, MessagingServiceRabbitMQ>("MessagingServiceRabbitMQ");
+
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+
+            services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMqSettings"));
 
             var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -99,7 +106,7 @@ namespace BlogTalks.Infrastructure
                 }});
             });
 
-
+            //services.AddMessaging(config);
 
             return services;
         }
