@@ -1,8 +1,14 @@
-﻿using BlogTalks.Domain.Entities;
+﻿using BlogTalks.Application.Abstractions;
+using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BlogTalks.Application.Comments.Commands
 {
@@ -10,16 +16,29 @@ namespace BlogTalks.Application.Comments.Commands
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IBlogPostRepository _blogPostRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IUserRepository _userRepository;
-        public AddCommentHandler(ICommentRepository commentRepository, IBlogPostRepository blogPostRepository, IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory, IUserRepository userRepository)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IFeatureManager _featureManager;
+        private readonly ILogger<AddCommentHandler> _logger;
+
+
+        public AddCommentHandler(
+            ICommentRepository commentRepository,
+            IBlogPostRepository blogPostRepository,
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor,
+            IServiceProvider serviceProvider,
+            IFeatureManager featureManager,
+            ILogger<AddCommentHandler> logger)
         {
             _commentRepository = commentRepository;
             _blogPostRepository = blogPostRepository;
-            _httpContextAccessor = httpContextAccessor;
-            _httpClientFactory = httpClientFactory;
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _serviceProvider = serviceProvider;
+            _featureManager = featureManager;
+            _logger = logger;
         }
 
         public async Task<AddResponse> Handle(AddComand request, CancellationToken cancellationToken)
@@ -39,30 +58,43 @@ namespace BlogTalks.Application.Comments.Commands
             {
                 throw new InvalidOperationException("Invalid user ID format.");
             }
-
-            var httpClient = _httpClientFactory.CreateClient("EmailSenderApi");
             var blogpostCreator = _userRepository.GetById(blogPost.CreatedBy);
             var commentCreator = _userRepository.GetById(userid);
 
-            int userId = int.Parse(userIdClaim);
             var comment = new Comment
             {
                 BlogPostId = request.BlogPostId,
                 Blog = blogPost,
                 Text = request.Text,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = userId
+                CreatedBy = userid
             };
 
             _commentRepository.Add(comment);
-            var emailDto = new
+
+            var emailDto = new Contracts.EmailDto()
             {
                 From = commentCreator.Email,
-                To = commentCreator.Email,
+                To = blogpostCreator.Email, 
                 Subject = "New Comment Added",
-                Body = " Someone added a new comment to your blog post: " + request.Text
+                Body = $"Someone added a new comment to your blog post: {request.Text}"
             };
-            await httpClient.PostAsJsonAsync("/send", emailDto);
+
+            if (await _featureManager.IsEnabledAsync("EmailHttpSender"))
+            {
+                var service = _serviceProvider.GetRequiredKeyedService<IMessagingService>("MessagingHttpService");
+                await service.Send(emailDto);
+            }
+            else if (await _featureManager.IsEnabledAsync("EmailRabbitMQSender"))
+            {
+                var service = _serviceProvider.GetRequiredKeyedService<IMessagingService>("MessagingServiceRabbitMQ");
+                await service.Send(emailDto);
+            }
+            else
+            {
+                _logger.LogError("No email sender feature flag is enabled. Email will not be sent.");
+            }
+
             return new AddResponse(comment.Id);
         }
     }
