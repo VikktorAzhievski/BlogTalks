@@ -95,7 +95,6 @@ namespace BlogTalks.Application.Comments.Commands
                 _logger.LogError("No email sender feature flag is enabled. Email will not be sent.");
             }
 
-
             return new AddResponse(comment.Id);
         }
     }
