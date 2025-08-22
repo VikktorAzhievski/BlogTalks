@@ -44,6 +44,5 @@ public class MessagingServiceRabbitMQ : IMessagingService
             basicProperties: properties,
             body: body
         );
-
     }
 }

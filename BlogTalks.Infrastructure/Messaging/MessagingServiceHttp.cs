@@ -16,7 +16,6 @@ namespace BlogTalks.Infrastructure.Messaging
             var client = _httpClientFactory.CreateClient("EmailSenderApi");
             //change
             var res = await client.PostAsJsonAsync("/send", email);
-
         }
 
     }

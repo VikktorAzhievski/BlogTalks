@@ -1,13 +1,14 @@
-﻿using BlogTalks.Domain.Entities;
+﻿using BlogTalks.Application.Abstractions;
+using BlogTalks.Domain.Entities;
 using BlogTalks.Domain.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using BlogTalks.Application.Abstractions;
 
 namespace BlogTalks.Application.Comments.Commands
 {
@@ -19,6 +20,8 @@ namespace BlogTalks.Application.Comments.Commands
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceProvider _serviceProvider;
         private readonly IFeatureManager _featureManager;
+        private readonly ILogger<AddCommentHandler> _logger;
+
 
         public AddCommentHandler(
             ICommentRepository commentRepository,
@@ -26,7 +29,8 @@ namespace BlogTalks.Application.Comments.Commands
             IUserRepository userRepository,
             IHttpContextAccessor httpContextAccessor,
             IServiceProvider serviceProvider,
-            IFeatureManager featureManager)
+            IFeatureManager featureManager,
+            ILogger<AddCommentHandler> logger)
         {
             _commentRepository = commentRepository;
             _blogPostRepository = blogPostRepository;
@@ -34,6 +38,7 @@ namespace BlogTalks.Application.Comments.Commands
             _httpContextAccessor = httpContextAccessor;
             _serviceProvider = serviceProvider;
             _featureManager = featureManager;
+            _logger = logger;
         }
 
         public async Task<AddResponse> Handle(AddComand request, CancellationToken cancellationToken)
@@ -53,7 +58,6 @@ namespace BlogTalks.Application.Comments.Commands
             {
                 throw new InvalidOperationException("Invalid user ID format.");
             }
-
             var blogpostCreator = _userRepository.GetById(blogPost.CreatedBy);
             var commentCreator = _userRepository.GetById(userid);
 
@@ -88,8 +92,9 @@ namespace BlogTalks.Application.Comments.Commands
             }
             else
             {
-                // TODO: логирај дека ниту еден sender не е вклучен
+                _logger.LogError("No email sender feature flag is enabled. Email will not be sent.");
             }
+
 
             return new AddResponse(comment.Id);
         }
