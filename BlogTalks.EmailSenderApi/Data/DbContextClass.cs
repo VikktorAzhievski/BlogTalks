@@ -1,6 +1,4 @@
-﻿using BlogTalks.Application.Contracts;
-using BlogTalks.EmailSenderApi.DTO;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace BlogTalks.EmailSenderApi.Data
 {
