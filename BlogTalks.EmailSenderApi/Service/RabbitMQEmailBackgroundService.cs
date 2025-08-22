@@ -5,75 +5,79 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 
+namespace BlogTalks.EmailSenderApi.Service;
 
-namespace BlogTalks.EmailSenderApi.Service
+public class RabbitMQBackgroundEmailService : BackgroundService
 {
-    public class RabbitMQEmailBackgroundService : BackgroundService
+    private IConnection _connection;
+    private IChannel _channel;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly RabbitMQSettingseEmailSender _rabbitMqSettings;
+
+    public RabbitMQBackgroundEmailService(IOptions<RabbitMQSettingseEmailSender> rabbitmqSettings, IServiceScopeFactory serviceScopeFactory)
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly BlogTalks.EmailSenderApi.DTO.RabbitMQSettingseEmailSender _rabbitSettings;
-        private readonly ILogger<RabbitMQEmailBackgroundService> _logger;
-        private IConnection _connection;
-        private IChannel _channel;
-        private readonly IEmailSender _emailSender;
+        _serviceScopeFactory = serviceScopeFactory;
+        _rabbitMqSettings = rabbitmqSettings.Value;
+    }
 
-        public RabbitMQEmailBackgroundService(IServiceScopeFactory serviceScopeFactory, IOptions<BlogTalks.EmailSenderApi.DTO.RabbitMQSettingseEmailSender> rabbitSettings, ILogger<RabbitMQEmailBackgroundService> logger, IEmailSender emailSender)
+    private async Task InitRabbitMQ()
+    {
+        var factory = new ConnectionFactory
         {
-            _serviceScopeFactory = serviceScopeFactory;
-            _rabbitSettings = rabbitSettings.Value;
-            _emailSender = emailSender;
-            _logger = logger;
-        }
+            HostName = _rabbitMqSettings.RabbitURL,
+            UserName = _rabbitMqSettings.Username,
+            Password = _rabbitMqSettings.Password,
+        };
+        _connection = await factory.CreateConnectionAsync();
+        _channel = await _connection.CreateChannelAsync();
 
-        private async Task InitRabbitMQAsync(EmailDto emailDto)
+        await _channel.ExchangeDeclareAsync(_rabbitMqSettings.ExchangeName, _rabbitMqSettings.ExchhangeType, durable: true);
+        await _channel.QueueDeclareAsync(_rabbitMqSettings.QueueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
+
+        await _channel.QueueBindAsync(_rabbitMqSettings.QueueName, _rabbitMqSettings.ExchangeName,
+            _rabbitMqSettings.RouteKey);
+        await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+
+        _connection.ConnectionShutdownAsync += RabbitMQ_ConnectionShutdown;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        stoppingToken.ThrowIfCancellationRequested();
+
+        await InitRabbitMQ();
+
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.ReceivedAsync += async (a, b) =>
         {
-            var factory = new ConnectionFactory
-            {
-                HostName = _rabbitSettings.RabbitURL,
-                UserName = _rabbitSettings.Username,
-                Password = _rabbitSettings.Password
-            };
-            await using var connection = await factory.CreateConnectionAsync();
-            await using var channel = await connection.CreateChannelAsync();
+            using var scope = _serviceScopeFactory.CreateScope();
+            var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+            var message = Encoding.UTF8.GetString(b.Body.ToArray());
+            var emailDetails = JsonConvert.DeserializeObject<EmailDto>(message);
 
-            await channel.ExchangeDeclareAsync(_rabbitSettings.ExchangeName, _rabbitSettings.ExchhangeType, durable: true);
-            await channel.QueueDeclareAsync(_rabbitSettings.QueueName, durable: true, exclusive: false, autoDelete: false);
-            await channel.QueueBindAsync(_rabbitSettings.QueueName, _rabbitSettings.ExchangeName, _rabbitSettings.RouteKey);
-            await _channel.BasicQosAsync(0, 1, false);
+            await emailSender.SendAsync(emailDetails);
+            await _channel.BasicAckAsync(b.DeliveryTag, false, stoppingToken);
+        };
 
-            _connection.ConnectionShutdownAsync += RabbitMQ_ConnectionShutdown;
-        }
+        consumer.ShutdownAsync += OnConsumerShutdown;
+        consumer.RegisteredAsync += OnConsumerRegistered;
+        consumer.UnregisteredAsync += OnConsumerUnregistered;
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            stoppingToken.ThrowIfCancellationRequested();
+        await _channel.BasicConsumeAsync(_rabbitMqSettings.QueueName, false, consumer, cancellationToken: stoppingToken);
+    }
+    private async Task OnConsumerUnregistered(object sender, ConsumerEventArgs e) { }
+    private async Task OnConsumerRegistered(object sender, ConsumerEventArgs e) { }
+    private async Task OnConsumerShutdown(object sender, ShutdownEventArgs e) { }
+    private async Task RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e) { }
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (ch, ea) =>
-            {
-                var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-                var emailDto = JsonConvert.DeserializeObject<EmailDto>(message);
-
-                await _emailSender.SendAsync(emailDto);
-                await _channel.BasicAckAsync(ea.DeliveryTag, false);
-            };
-            consumer.ShutdownAsync += OnConsumerShutdown;
-            consumer.RegisteredAsync += OnConsumerRegistered;
-            consumer.UnregisteredAsync += OnConsumerUnregistered;
-
-            await _channel.BasicConsumeAsync(_rabbitSettings.QueueName, autoAck: false, consumer);
-        }
-        public override void Dispose()
-        {
-            _channel.CloseAsync();
-            _connection.CloseAsync();
-            base.Dispose();
-        }
-
-        private Task OnConsumerConsumerCancelled(object sender, ConsumerEventArgs e) => Task.CompletedTask;
-        private Task OnConsumerUnregistered(object sender, ConsumerEventArgs e) => Task.CompletedTask;
-        private Task OnConsumerRegistered(object sender, ConsumerEventArgs e) => Task.CompletedTask;
-        private Task OnConsumerShutdown(object sender, ShutdownEventArgs e) => Task.CompletedTask;
-        private Task RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e) => Task.CompletedTask;
+    public override void Dispose()
+    {
+        _channel.CloseAsync();
+        _connection.CloseAsync();
+        base.Dispose();
     }
 }

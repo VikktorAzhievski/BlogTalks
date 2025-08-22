@@ -1,11 +1,10 @@
 ﻿using BlogTalks.EmailSenderApi.DTO;
-using BlogTalks.EmailSenderApi.Service;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 
-namespace BlogTalks.EmailSenderApi.Services;
+namespace BlogTalks.EmailSenderApi.Service;
 
 public class EmailSender : IEmailSender
 {

@@ -1,10 +1,10 @@
+//using BlogTalks.Email.Services;
 using BlogTalks.EmailSenderApi.DTO;
 using BlogTalks.EmailSenderApi.Service;
-using BlogTalks.EmailSenderApi.Services;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService<RabbitMQBackgroundEmailService>();
 
 builder.Services.Configure<RabbitMQSettingseEmailSender>(builder.Configuration.GetSection("RabbitMqSettings"));
 builder.Services.AddSingleton(builder.Configuration
@@ -12,7 +12,6 @@ builder.Services.AddSingleton(builder.Configuration
     .Get<RabbitMQSettingseEmailSender>());
 
 builder.Services.AddOpenApi();
-
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 var app = builder.Build();
